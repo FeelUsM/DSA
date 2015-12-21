@@ -14,6 +14,25 @@ void form_pod(int len, const WORD *g1, const WORD * HH, const WORD *skl, WORD *R
 bool verbose;
 int main(int argc, const char * argv[]){
 	verbose = argc==1;
+
+	WORD Y[LEN1], GG[LEN1], X3[LEN1], X4[LEN1], HH[LEN1], R1[LEN1], S1[LEN1];
+	//вывод P,Q
+	if(verbose)
+		cout<<"P = "<<endl<<hex_mas(11,PP)<<endl
+			<<"q = "<<endl<<hex_mas(11,QQ)<<endl;
+	// вычисление G=Hnach^[(P-1)/Q](mod P)
+	minus(LEN1,PP,ODIN,X3);             //X3 = PP-1
+	Div(LEN1,X3,QQ,X4);                 //X4 = X3/QQ
+	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);	//GG = pow(Hnach,X4)%PP
+	if(verbose){
+		cout<< "вычисление G=Hnach^[(P-1)/Q](mod P)"<<endl;
+		cout << "G = "<<hex_mas(LEN1,GG)<<endl ;
+		//проверка модуля Р: G^Q=1(mod P)
+		cout<< "проверка модуля Р: G^Q=1(mod P)"<<endl;
+		step_mod(PP,GG,LEN1,QQ,LEN1,X3);//X3 = pow(GG,QQ)%PP
+		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl<<endl;
+	}
+
 	char infilename[1000], outfilename[1000];
 	if(verbose){
 		//прочитать имя входного/выходного файла
@@ -50,19 +69,6 @@ int main(int argc, const char * argv[]){
 	}
 	else
 		;//разобрать параметры
-	WORD Y[LEN1], GG[LEN1], X3[LEN1], X4[LEN1], HH[LEN1], R1[LEN1], S1[LEN1];
-	// вычисление G=Hnach^[(P-1)/Q](mod P)
-	minus(LEN1,PP,ODIN,X3);             //X3 = PP-1
-	Div(LEN1,X3,QQ,X4);                 //X4 = X3/QQ
-	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);	//GG = pow(Hnach,X4)%PP
-	if(verbose){
-		cout<< "вычисление G=Hnach^[(P-1)/Q](mod P)"<<endl;
-		cout << "G = "<<hex_mas(LEN1,GG)<<endl ;
-		//проверка модуля Р: G^Q=1(mod P)
-		cout<< "проверка модуля Р: G^Q=1(mod P)"<<endl;
-		step_mod(PP,GG,LEN1,QQ,LEN1,X3);//X3 = pow(GG,QQ)%PP
-		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl;
-	}
 	//Вычисление открытого ключа по секретному ключу
 	step_mod(PP,GG,LEN1,XX,LEN1,Y);     //Y = pow(GG,XX)%PP
 	if(verbose)
@@ -132,21 +138,21 @@ int main(int argc, const char * argv[]){
 void form_pod(int len, const WORD *g1, const WORD * HH, const WORD *skl, WORD *R1, WORD *S1)
 {
     WORD M[LEN1],X5[2*LEN1],X6[LEN1];
-	/* 2) Вычисление R компонеты подписи */
+	/* 2) Вычисление R компонеты подписи = pow(g,k)%p%q */
 
-	step_mod(PP,g1,len,skl,len,R1);
-	mod_p(R1,len,QQ,len);
+	step_mod(PP,g1,len,skl,len,R1);  //R1 = pow(g1,skl)%PP
+	mod_p(R1,len,QQ,len);            //R1%= QQ
 
-	/* 3) Вычисление S компоненты подписи */
+	/* 3) Вычисление S компоненты подписи = ( (k^-1 mod q)*(h+x*r) )%q */
 
-	umn(XX,len,R1,len,X5,2*len);
-	mod_p(X5,2*len,QQ,LEN1);
-	plus(len,X5,HH,X6);
-	mod_p(X6,len,QQ,LEN1);
-	obr(len,skl,QQ,M);
-	umn(X6,len,M,len,X5,2*len);
-	mod_p(X5,2*len,QQ,LEN1);
-	memcpy(S1,X5,len*sizeof(WORD));
+	umn(XX,len,R1,len,X5,2*len);     //X5 = XX*R1
+	mod_p(X5,2*len,QQ,LEN1);         //X5%= QQ
+	plus(len,X5,HH,X6);              //X6 = X5+HH
+	mod_p(X6,len,QQ,LEN1);           //X6%= QQ
+	obr(len,skl,QQ,M);               //M = (skl^-1 mod QQ)
+	umn(X6,len,M,len,X5,2*len);      //X5 = X6*M
+	mod_p(X5,2*len,QQ,LEN1);         //X5%= QQ
+	memcpy(S1,X5,len*sizeof(WORD));  //S1 = X5
 
 	return;
 }

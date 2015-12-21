@@ -14,6 +14,23 @@ int main(int argc, const char * argv[]){
 	verbose = argc==1;
 	char infilename[1000], outfilename[1000];
 	WORD Y[LEN1], GG[LEN1], X3[LEN1], X4[LEN1], HH[LEN1], R1[LEN1], S1[LEN1];
+	//вывод P,Q
+	if(verbose)
+		cout<<"P = "<<endl<<hex_mas(11,PP)<<endl
+			<<"q = "<<endl<<hex_mas(11,QQ)<<endl;
+	// вычисление G=Hnach^[(P-1)/Q](mod P)
+	minus(LEN1,PP,ODIN,X3);             //X3 = PP-1
+	Div(LEN1,X3,QQ,X4);                 //X4 = X3/QQ
+	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);	//GG = pow(Hnach,X4)%PP
+	if(verbose){
+		cout<< "вычисление G=Hnach^[(P-1)/Q](mod P)"<<endl;
+		cout << "G = "<<hex_mas(LEN1,GG)<<endl ;
+		//проверка модуля Р: G^Q=1(mod P)
+		cout<< "проверка модуля Р: G^Q=1(mod P)"<<endl;
+		step_mod(PP,GG,LEN1,QQ,LEN1,X3);//X3 = pow(GG,QQ)%PP
+		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl<<endl;
+	}
+
 	if(verbose){
 		//прочитать имя входного/выходного файла
 		cout<<"Введите имя входного файла"<<endl;
@@ -40,11 +57,11 @@ int main(int argc, const char * argv[]){
 		}
 		char s[1000];
 		in_f.getline(s,1000);
-		if(verbose)		cout<<"прочитана компонента R:"<<endl<<s<<endl;
 		{	stringstream str((string)s);	str>>hex_mas(10,R1);	}
+		if(verbose)		cout<<"прочитана компонента R = "<<hex_mas(10,R1)<<endl;
 		in_f.getline(s,1000);
-		if(verbose)		cout<<"прочитана компонента S:"<<endl<<s<<endl;
 		{	stringstream str(s);	str>>hex_mas(10,S1);	}
+		if(verbose)		cout<<"прочитана компонента S = "<<hex_mas(10,S1)<<endl;
 	}
 	
 	{//скопировать файл
@@ -87,18 +104,7 @@ int main(int argc, const char * argv[]){
 		}
 		fclose(in_f);
 	}
-	// вычисление G=Hnach^[(P-1)/Q](mod P)
-	minus(LEN1,PP,ODIN,X3);
-	Div(LEN1,X3,QQ,X4);
-	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);
-	if(verbose){
-		cout<< "вычисление G=Hnach^[(P-1)/Q](mod P)"<<endl;
-		cout << "G = "<<hex_mas(LEN1,GG)<<endl ;
-		//проверка модуля Р: G^Q=1(mod P)
-		cout<< "проверка модуля Р: G^Q=1(mod P)"<<endl;
-		step_mod(PP,GG,LEN1,QQ,LEN1,X3);
-		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl<<endl;
-	}
+
 	if(prov_pod(LEN1, GG, HH, Y, R1, S1)){
 		if(verbose)
 			cout<<endl<<"Подпись верна так как вычисленное значение V равно подписанному значению R"<<endl;
@@ -133,28 +139,28 @@ bool prov_pod(int len, const WORD *g1, const WORD * HH1, const WORD *okl, const 
 	WORD AA[LEN1],BB[LEN1],V[LEN1];
 
 	if(verbose)	cout <<endl<<"Вычисление компонент A,B,V ";
-	/* 2) Вычисление А */
-	obr(len,S1,QQ,M);
-	umn(HH1,len,M,len,X5,2*len);
-	mod_p(X5,2*len,QQ,len);
-	memcpy(AA,X5,len*sizeof(WORD));
+	/* 2) Вычисление А = (s^-1 mod q)*h%q */
+	obr(len,S1,QQ,M);                //M = S1^-1 mod QQ
+	umn(HH1,len,M,len,X5,2*len);     //X5 = HH1*M
+	mod_p(X5,2*len,QQ,len);          //X5%= QQ
+	memcpy(AA,X5,len*sizeof(WORD));  //AA = X5
 
 	if(verbose)	cout<<"\nA="<<hex_mas(len-1,AA);
 
 	/* 3) Вычисление В */
-	umn(R1,len,M,len,X5,2*len);
-	mod_p(X5,2*len,QQ,len);
-	memcpy(BB,X5,len*sizeof(WORD));
+	umn(R1,len,M,len,X5,2*len);      //X5 = R1*M
+	mod_p(X5,2*len,QQ,len);          //X5%= QQ
+	memcpy(BB,X5,len*sizeof(WORD));  //BB = X5
 
 	if(verbose)	cout<<("\nB=")<<hex_mas(len-1,BB);
 
 	/* 4) Вычисление V */
-	step_mod(PP,g1,len,AA,len,X5);
-	step_mod(PP,okl,len,BB,len,X6);
-	umn(X5,len,X6,len,X4,2*len);
-	mod_p(X4,2*len,PP,len);
-	mod_p(X4,len,QQ,len);
-	memcpy(V,X4,len*sizeof(WORD));
+	step_mod(PP,g1,len,AA,len,X5);   //X5 = pow(g1,AA)%PP
+	step_mod(PP,okl,len,BB,len,X6);  //X6 = pow(okl,BB)%PP
+	umn(X5,len,X6,len,X4,2*len);     //X4 = X5*X6
+	mod_p(X4,2*len,PP,len);          //X4%= PP
+	mod_p(X4,len,QQ,len);            //X4%= QQ
+	memcpy(V,X4,len*sizeof(WORD));   //V = X4
 
 	if(verbose)	cout<<"\nV="<<hex_mas(len-1,V);
 
