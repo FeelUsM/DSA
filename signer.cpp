@@ -50,24 +50,24 @@ int main(int argc, const char * argv[]){
 	}
 	else
 		;//разобрать параметры
-	//Вычисление открытого ключа по секретному ключу
 	WORD Y[LEN1], GG[LEN1], X3[LEN1], X4[LEN1], HH[LEN1], R1[LEN1], S1[LEN1];
-	step_mod(PP,GG,LEN1,XX,LEN1,Y);
-	if(verbose)
-		cout<<endl << "Открытый ключ Y=G^x(mod P) = "<<endl;
-	cout<<hex_mas(10,Y)<<endl;
 	// вычисление G=Hnach^[(P-1)/Q](mod P)
-	minus(LEN1,PP,ODIN,X3);
-	Div(LEN1,X3,QQ,X4);
-	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);
+	minus(LEN1,PP,ODIN,X3);             //X3 = PP-1
+	Div(LEN1,X3,QQ,X4);                 //X4 = X3/QQ
+	step_mod(PP,Hnach,LEN1,X4,LEN1,GG);	//GG = pow(Hnach,X4)%PP
 	if(verbose){
 		cout<< "вычисление G=Hnach^[(P-1)/Q](mod P)"<<endl;
 		cout << "G = "<<hex_mas(LEN1,GG)<<endl ;
 		//проверка модуля Р: G^Q=1(mod P)
 		cout<< "проверка модуля Р: G^Q=1(mod P)"<<endl;
-		step_mod(PP,GG,LEN1,QQ,LEN1,X3);
-		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl<<endl;
+		step_mod(PP,GG,LEN1,QQ,LEN1,X3);//X3 = pow(GG,QQ)%PP
+		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl;
 	}
+	//Вычисление открытого ключа по секретному ключу
+	step_mod(PP,GG,LEN1,XX,LEN1,Y);     //Y = pow(GG,XX)%PP
+	if(verbose)
+		cout<<endl << "Открытый ключ Y=G^x(mod P) = "<<endl;
+	cout<<hex_mas(10,Y)<<endl;
 
 	FILE * in_f = fopen(infilename,"r");
 	if(!in_f){

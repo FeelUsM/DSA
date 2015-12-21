@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]){
 	}
 	
 	{//скопировать файл
-		FILE * in_f=fopen(infilename,"r"), * out_f=fopen(outfilename,"a");
+		FILE * in_f=fopen(infilename,"r"), * out_f=fopen(outfilename,"w");
 		if(!out_f){
 			cerr <<"не могу открыть файл "<<outfilename<<", останов"<<endl;
 			exit(2);
@@ -57,11 +57,15 @@ int main(int argc, const char * argv[]){
 			cerr <<"не могу открыть файл "<<infilename<<", останов"<<endl;
 			exit(2);
 		}
+		//cout<<"копирование"<<endl;
 		char arr[10000];
 		fgets(arr,10000,in_f);
+		//cout<<"игнорируем: "<<arr<<endl;
 		fgets(arr,10000,in_f);
+		//cout<<"игнорируем: "<<arr<<endl;
 		while(!feof(in_f)){
 			fgets(arr,10000,in_f);
+			//cout<<"копируем: "<<arr<<endl;
 			fputs(arr,out_f);
 		}
 		fclose(in_f);

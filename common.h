@@ -14,9 +14,9 @@ using std::ostream;
 using std::istream;
 
 
-#define BYTE unsigned char
-#define WORD unsigned short
-#define DWORD unsigned long int
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef uint32_t DWORD;
 #define LEN1 11
 #define LENBUF 130
 #define max(a,b)  (((a)>(b))?(a):(b))
@@ -178,6 +178,7 @@ ostream & operator<<(ostream & str, const short_hex_mas & hm){
 void file_hash(FILE * f, WORD * HH, bool verbose){
 	BYTE MM[64];
 	DWORD * AAA1 = (DWORD *)HH;
+	
 	for(int i=0; i<5; i++) AAA1[i]=ACONST[i];
 	
 	if(verbose)
@@ -187,8 +188,9 @@ void file_hash(FILE * f, WORD * HH, bool verbose){
 		for(int i=l; i<64; i++)
 			MM[i]=0;
 		if(verbose){
+			cout<<"cur_hash="<<hex_mas(10,HH)<<endl;
 			for(int i=0; i<64; i++)
-				cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)MM[i];
+				cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)(MM[i]);
 			cout<<endl;
 		}
 		hash_fun(AAA1,(DWORD*)MM);
