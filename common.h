@@ -1,7 +1,7 @@
  #ifdef MSC_VER
 #include "stdafx.h"
-#include <stdio.h>
 #endif
+#include <stdio.h>
 #include <string.h>
 #include <iomanip>
 #include <iostream>
@@ -9,7 +9,9 @@
 using std::cout;
 using std::endl;
 using std::cin;
+using std::cerr;
 using std::ostream;
+using std::istream;
 
 
 #define BYTE unsigned char
@@ -35,7 +37,7 @@ WORD XX[11]=
 WORD k[11]=
 	{
 	 0xfdf3, 0xf2ff, 0xf4ff, 0xfff6, 0xf4ff, 0x664f, 0xffff, 0xffff,
-	 0xffff, 0xffff, 0x0001
+	 0xffff, 0xffff, 0x0000
 	}; // разовый ключ, случайный эфемерный ключ
 WORD Hnach[11]=
 	{
@@ -143,13 +145,24 @@ void prov_pod(int len, const WORD *g1, const WORD * HH1, const WORD *okl, const 
 
 struct hex_mas{
 	int len;
-	const WORD * mas;
-	hex_mas(int l, const WORD * m):len(l),mas(m){}
+	WORD * mas;
+	hex_mas(int l, WORD * m):len(l),mas(m){}
 };
 ostream & operator<<(ostream & str, const hex_mas & hm){
 	for(int i=hm.len-1; i>=0; i--) str<<std::hex<<std::setw(4)<<std::setfill('0')<<hm.mas[i]<<' ';
 	return str;
 }
+istream & operator>>(istream & str, hex_mas && hm){
+	for(int i=hm.len-1; i>=0; i--){
+		str>>std::hex>>std::setw(4)>>hm.mas[i];//>>' ';
+		if(!str){
+			cerr<<"неправильный формат ввода, завершение"<<endl;
+			exit(2);
+		}
+	}
+	return str;
+}
+
 
 struct short_hex_mas{
 	int len;
@@ -164,9 +177,33 @@ ostream & operator<<(ostream & str, const short_hex_mas & hm){
 //======================================================================
 
 /*
+ * из открытого файла f создает хэш-функцию HH
+ */
+void file_hash(FILE * f, WORD * HH, bool verbose){
+	BYTE MM[64];
+	DWORD * AAA1 = (DWORD *)HH;
+	for(int i=0; i<5; i++) AAA1[i]=ACONST[i];
+	
+	if(verbose)
+		cout<<"сообщение в кодах ASCII:"<<endl;
+	while(!feof(f)){
+		size_t l = fread(MM,1,64,f);
+		for(int i=l; i<64; i++)
+			MM[i]=0;
+		if(verbose){
+			for(int i=0; i<64; i++)
+				cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)MM[i];
+			cout<<endl;
+		}
+		hash_fun(AAA1,(DWORD*)MM);
+	}
+	HH[10]=0x0000;
+}
+
+/*
  * из сообщения bb создает хэш-функцию HH
  */
-void crypto_hash(const char * bb, WORD * HH){
+void string_hash(const char * bb, WORD * HH){
 	int i,j,j1,z,z1,n,n1,n2,n3;
 	BYTE MM[64];
 	DWORD qq1,MM1[16],AAA1[5];

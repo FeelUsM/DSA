@@ -333,6 +333,9 @@ void crypto_hash(const char * bb, WORD * HH){
 			for(j1=0; j1<n2; j1++) { MM[j1]=(BYTE)bb[z1]; z1++; }
 			for(j1=n2; j1<64; j1++) MM[j1]= 0x00;
 		}
+			for(int i=0; i<64; i++)
+				cout<<std::hex<<std::setw(2)<<std::setfill('0')<<(int)MM[i];
+			cout<<endl;
 
 		j=0;
 		for(i=0; i<16; i++){
