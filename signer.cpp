@@ -48,6 +48,8 @@ int main(int argc, const char * argv[]){
 		mod_p(k,LEN1,QQ,LEN1);
 		cout<<hex_mas(10,k)<<endl;
 	}
+	else
+		;//разобрать параметры
 	//Вычисление открытого ключа по секретному ключу
 	WORD Y[LEN1], GG[LEN1], X3[LEN1], X4[LEN1], HH[LEN1], R1[LEN1], S1[LEN1];
 	step_mod(PP,GG,LEN1,XX,LEN1,Y);
@@ -66,7 +68,6 @@ int main(int argc, const char * argv[]){
 		step_mod(PP,GG,LEN1,QQ,LEN1,X3);
 		cout<<"G^Q = "<<hex_mas(LEN1,X3)<<((cmp(11,X3,ODIN))?" - OK":" - что-то пошло не так")<<endl<<endl;
 	}
-
 
 	FILE * in_f = fopen(infilename,"r");
 	if(!in_f){
@@ -88,7 +89,6 @@ int main(int argc, const char * argv[]){
 	//записать в файл
 	{
 		fstream out_f(outfilename,std::fstream::out);
-		if(!out_f)
 		if(!out_f){
 			cerr <<"не могу открыть файл "<<outfilename<<", останов"<<endl;
 			exit(2);

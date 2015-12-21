@@ -138,10 +138,6 @@ void hash_fun(DWORD *TT2, const DWORD *M2);
  * из сообщения bb создает хэш-функцию HH
  */
 void crypto_hash(const char * bb, WORD * HH);
-/* Функция выполняет вычисление подписи */
-void form_pod(int len1, const WORD *g1, const WORD * HH, const WORD *skl, WORD *R1, WORD *S1);
-/* Функция выполняет проверку подписи */
-void prov_pod(int len, const WORD *g1, const WORD * HH1, const WORD *okl, const WORD *R1, const WORD *S1);
 
 struct hex_mas{
 	int len;
